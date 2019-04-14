@@ -9,6 +9,7 @@ Please check out our [website](https://emblock.co) before using our sdk.
 - [Installing](#installing)
 - [API docs](#api-docs)
 - [Usage examples](#usage-examples)
+  - [Creating an instance of EmblockClient](#creating-an-instance-of-emblockclient)
   - [Calling a constant function or get a state value](#calling-a-constant-function-or-get-a-state-value)
   - [Calling a function](#calling-a-function)
   - [Listening to events](#listening-to-events)
@@ -27,11 +28,16 @@ See [`/doc/emblock-sdk-js.md`](./doc/emblock-sdk-js.md) for Node.js-like docs fo
 
 ## Usage examples
 
-### Calling a constant function or get a state value
+### Creating an instance of EmblockClient
 
 ```js
 const EmblockClient = require('emblock-sdk-js')
 const emblock = new EmblockClient('<API_KEY>', '<YOUR_CONTRACT_ID>')
+```
+
+### Calling a constant function or get a state value
+
+```js
 // { paramName1: "<param_value_1>", paramName2: "<param_value_2>" }
 const params = { owner: '0xcd92C45083aB059B1e5Af91c7cE58adf9D199e3c' }
 emblock
@@ -53,12 +59,10 @@ emblock
 We are calling the transfer function of an ERC-20 smart contract.
 
 ```js
-const EmblockClient = require('emblock-sdk-js')
-const emblock = new EmblockClient('<API_KEY>', '<YOUR_CONTRACT_ID>')
 const user1 = '0x73426F686Db8e511310a9fb90F9B22DB71ed53D4' // wallet address of the user 1
 var wallet = '0xcd92C45083aB059B1e5Af91c7cE58adf9D199e3c' // wallet address of the sender
 const params = { to: user1, value: '100' }
-client
+emblock
   .callFunction(wallet, 'transfer', params)
   .then(resp => {
     if (resp.isSuccessful) console.log('successful')
@@ -74,9 +78,6 @@ client
 Listening to events emitted by your smart contract.
 
 ```js
-const EmblockClient = require('emblock-sdk-js')
-const emblock = new EmblockClient('<API_KEY>', '<YOUR_CONTRACT_ID>')
-
 emblock.addEventsListener(({ event, params }) => {
   if (event === 'Transfer') {
     console.log('this is a Transfer event !')
