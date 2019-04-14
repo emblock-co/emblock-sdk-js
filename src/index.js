@@ -3,7 +3,7 @@
 import fetch from 'node-fetch'
 import WebSocket from 'isomorphic-ws'
 
-const SERVER_URL = 'http://localhost:9000'
+const SERVER_URL = 'https://api.emblock.co/'
 
 export default class EmblockClient {
   constructor(apiKey, contractId) {
