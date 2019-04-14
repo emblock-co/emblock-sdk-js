@@ -14,7 +14,7 @@ Please check out our [website](https://emblock.co) before using our sdk.
   - [Calling a function](#calling-a-function)
   - [Listening to events](#listening-to-events)
 - [Changelog](#changelog)
-- [Licence](#licence)
+- [License](#license)
 
 ## Installing
 
