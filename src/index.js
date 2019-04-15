@@ -3,6 +3,7 @@
 import fetch from 'node-fetch'
 import WebSocket from 'isomorphic-ws'
 
+//const SERVER_URL = 'https://api.emblock.co/'
 const SERVER_URL = 'https://api.emblock.co/'
 
 /**
@@ -10,7 +11,7 @@ const SERVER_URL = 'https://api.emblock.co/'
  */
 export default class EmblockClient {
   /**
-   * Create a EmblockClient passing an ApiKey and a contractId
+   * Create a EmblockClient passing an ApiKey and a projectId
    */
   constructor(apiKey, projectId) {
     this.apiKey = apiKey
@@ -36,8 +37,7 @@ export default class EmblockClient {
           if (resp.ok) {
             return resolve(resp.json)
           }
-          var error = resp.json.error
-          reject(Error(error))
+          reject(Error(getErrorMessage(resp)))
         })
       })
   }
@@ -68,11 +68,11 @@ export default class EmblockClient {
                   isSuccessful: response.json.status === 'Successful'
                 })
               }
-              reject(Error(response.json.error))
+              reject(Error(getErrorMessage(response)))
             })
           })
         } else {
-          return new Promise((resolve, reject) => reject(Error(resp.json.error)))
+          return new Promise((resolve, reject) => reject(Error(getErrorMessage(resp))))
         }
       })
   }
@@ -101,6 +101,7 @@ export default class EmblockClient {
     const wsUrl = SERVER_URL.replace('http', 'ws').replace('https', 'wss') + '/notifs'
     // first time we call is - open the websocket
     if (!this.socket) {
+      // we need the id of the current contract of this project
       const path = `${SERVER_URL}/projects/${this.projectId}/contracts/current`
       fetch(path, {
         method: 'GET',
@@ -121,7 +122,11 @@ export default class EmblockClient {
               }
             }
             const msg = JSON.stringify(data)
-            this.socket.send(msg)
+            try {
+              this.socket.send(msg)
+            } catch (e) {
+              if (cb) cb({ error: e })
+            }
           })
 
           this.socket.on('message', message => {
@@ -130,9 +135,18 @@ export default class EmblockClient {
             if (cb) cb({ event: eventName, params: data.params })
           })
         })
-        .catch(err => {})
+        .catch(err => {
+          cb({ error: err })
+        })
     }
   }
+}
+
+const getErrorMessage = function(resp) {
+  const error = resp.json.error
+  var errorMessage = resp.status
+  if (error) errorMessage = `${errorMessage}: ${error}`
+  return errorMessage
 }
 
 const createHeaders = function(apiKey) {
