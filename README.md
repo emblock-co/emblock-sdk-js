@@ -32,7 +32,7 @@ See [`/doc/emblock-sdk-js.md`](./doc/emblock-sdk-js.md) for Node.js-like docs fo
 
 ```js
 const EmblockClient = require('emblock-sdk-js').default
-const emblock = new EmblockClient('<API_KEY>', '<YOUR_CONTRACT_ID>')
+const emblock = new EmblockClient('<API_KEY>', '<YOUR_PROJECT_ID>')
 ```
 
 ### Calling a constant function or get a state value
@@ -78,9 +78,13 @@ emblock
 Listening to events emitted by your smart contract.
 
 ```js
-emblock.addEventsListener(({ event, params }) => {
-  if (event === 'Transfer') {
-    console.log('this is a Transfer event !')
+emblock.addEventsListener(({ event, params, error }) => {
+  if (error) {
+    console.log('error=' + error)
+  } else {
+    if (event === 'Transfer') {
+      console.log('this is a Transfer event !')
+    }
   }
 })
 ```
