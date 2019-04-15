@@ -12,9 +12,9 @@ export default class EmblockClient {
   /**
    * Create a EmblockClient passing an ApiKey and a contractId
    */
-  constructor(apiKey, contractId) {
+  constructor(apiKey, projectId) {
     this.apiKey = apiKey
-    this.contractId = contractId
+    this.projectId = projectId
   }
 
   /**
@@ -25,7 +25,7 @@ export default class EmblockClient {
    */
   callConstant(functionName, params) {
     const headers = createHeaders(this.apiKey)
-    return fetch(`${SERVER_URL}/calls/${this.contractId}/${functionName}`, {
+    return fetch(`${SERVER_URL}/projects/${this.projectId}/calls/current/${functionName}`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(params)
@@ -53,8 +53,8 @@ export default class EmblockClient {
    */
   callFunction(sender, functionName, params) {
     const headers = createHeaders(this.apiKey)
-    if (wallet) headers['wallet'] = wallet
-    const path = `${SERVER_URL}/calls/${this.contractId}/${functionName}`
+    if (sender) headers['wallet'] = sender
+    const path = `${SERVER_URL}/projects/${this.projectId}/calls/current/${functionName}`
     return fetch(path, {
       method: 'POST',
       headers: headers,
