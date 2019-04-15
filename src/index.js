@@ -32,15 +32,12 @@ export default class EmblockClient {
     })
       .then(parseJSON)
       .then(resp => {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
           if (resp.ok) {
             return resolve(resp.json)
           }
           var error = resp.json.error
-          reject({
-            status: resp.status,
-            error: error
-          })
+          reject(Error(error))
         })
       })
   }
@@ -62,16 +59,21 @@ export default class EmblockClient {
     })
       .then(parseJSON)
       .then(resp => {
-        return this.callFunctionStatus(resp.json.callId)
-          .then(parseJSON)
-          .then(response => {
-            return new Promise(resolve => {
-              resolve({
-                status: response.json.status,
-                isSuccessful: response.json.status === 'Successful'
-              })
+        if (resp.ok) {
+          return this.callFunctionStatus(resp.json.callId).then(response => {
+            return new Promise((resolve, reject) => {
+              if (response.ok) {
+                return resolve({
+                  status: response.json.status,
+                  isSuccessful: response.json.status === 'Successful'
+                })
+              }
+              reject(Error(response.json.error))
             })
           })
+        } else {
+          return new Promise((resolve, reject) => reject(Error(resp.json.error)))
+        }
       })
   }
 
@@ -80,14 +82,12 @@ export default class EmblockClient {
    * @param {string} callId callId returned by the 'callFunction'
    */
   callFunctionStatus(callId) {
-    const headers = {}
-    headers['content-type'] = 'application/json'
-    headers['Authorization'] = `Bearer ${this.apiKey}`
+    const headers = createHeaders(this.apiKey)
     const path = `${SERVER_URL}/calls/${callId}/status`
     return fetch(path, {
       method: 'GET',
       headers: headers
-    }).then(this.parseJSON)
+    }).then(parseJSON)
   }
 
   removeEventsListener() {
@@ -101,26 +101,36 @@ export default class EmblockClient {
     const wsUrl = SERVER_URL.replace('http', 'ws').replace('https', 'wss') + '/notifs'
     // first time we call is - open the websocket
     if (!this.socket) {
-      // create socket
-      this.socket = new WebSocket(wsUrl)
-
-      // on open -> subscribe to this contract events
-      this.socket.on('open', () => {
-        const data = {
-          type: 'contract_events',
-          data: {
-            contractId: this.contractId
-          }
-        }
-        const msg = JSON.stringify(data)
-        this.socket.send(msg)
+      const path = `${SERVER_URL}/projects/${this.projectId}/contracts/current`
+      fetch(path, {
+        method: 'GET',
+        headers: createHeaders(this.apiKey)
       })
+        .then(parseJSON)
+        .then(resp => {
+          // create socket
+          this.socket = new WebSocket(wsUrl)
 
-      this.socket.on('message', message => {
-        const data = JSON.parse(message)
-        const eventName = data.name
-        if (cb) cb({ event: eventName, params: data.params })
-      })
+          // on open -> subscribe to this contract events
+          const contractId = resp.json.details.id
+          this.socket.on('open', () => {
+            const data = {
+              type: 'contract_events',
+              data: {
+                contractId: contractId
+              }
+            }
+            const msg = JSON.stringify(data)
+            this.socket.send(msg)
+          })
+
+          this.socket.on('message', message => {
+            const data = JSON.parse(message)
+            const eventName = data.name
+            if (cb) cb({ event: eventName, params: data.params })
+          })
+        })
+        .catch(err => {})
     }
   }
 }
