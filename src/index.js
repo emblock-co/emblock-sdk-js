@@ -5,15 +5,20 @@ import WebSocket from 'isomorphic-ws'
 
 const SERVER_URL = 'https://api.emblock.co/'
 
+/**
+ * This is a javascript SDK to interact with a project/smart contract deployed on the Emblock platform.
+ */
 export default class EmblockClient {
+  /**
+   * Create a EmblockClient passing an ApiKey and a contractId
+   */
   constructor(apiKey, contractId) {
     this.apiKey = apiKey
     this.contractId = contractId
-    //this.events = new Map()
   }
 
   /**
-   * Call a constant function
+   * Call a constant function of the smart contract or get the value of a state
    * @param functionName the name of constant function to call
    * @param params parameters to call the constant function
    * @returns list of result
@@ -41,13 +46,12 @@ export default class EmblockClient {
   }
 
   /**
-   * Call a function
-   * @param {string} wallet pass the name of the wallet
-   * @param {string} functionName name of the function
-   * @param {object} params function parameters
+   * Call a smart contract function
+   * @param {string} sender address of the sender that calls the function
+   * @param {string} functionName name of the function to call
+   * @param {object} params parameters of the function
    */
-  callFunction(wallet, functionName, params) {
-    const headers = generateHeaders(this.apiKey)
+  callFunction(sender, functionName, params) {
     const headers = createHeaders(this.apiKey)
     if (wallet) headers['wallet'] = wallet
     const path = `${SERVER_URL}/calls/${this.contractId}/${functionName}`
@@ -74,6 +78,10 @@ export default class EmblockClient {
       })
   }
 
+  /**
+   * Get a function status (Successful|Failed) from a callId
+   * @param {string} callId callId returned by the 'callFunction'
+   */
   callFunctionStatus(callId) {
     const headers = {}
     headers['content-type'] = 'application/json'
