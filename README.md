@@ -31,7 +31,7 @@ See [`/doc/emblock-sdk-js.md`](./doc/emblock-sdk-js.md) for Node.js-like docs fo
 ### Creating an instance of EmblockClient
 
 ```js
-const EmblockClient = require('emblock-sdk-js')
+const EmblockClient = require('emblock-sdk-js').default
 const emblock = new EmblockClient('<API_KEY>', '<YOUR_CONTRACT_ID>')
 ```
 
