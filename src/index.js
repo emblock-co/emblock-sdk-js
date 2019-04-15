@@ -19,7 +19,7 @@ export default class EmblockClient {
    * @returns list of result
    */
   callConstant(functionName, params) {
-    const headers = generateHeaders(this.apiKey)
+    const headers = createHeaders(this.apiKey)
     return fetch(`${SERVER_URL}/calls/${this.contractId}/${functionName}`, {
       method: 'POST',
       headers: headers,
@@ -48,6 +48,7 @@ export default class EmblockClient {
    */
   callFunction(wallet, functionName, params) {
     const headers = generateHeaders(this.apiKey)
+    const headers = createHeaders(this.apiKey)
     if (wallet) headers['wallet'] = wallet
     const path = `${SERVER_URL}/calls/${this.contractId}/${functionName}`
     console.log('path =' + path)
@@ -121,7 +122,7 @@ export default class EmblockClient {
   }
 }
 
-const generateHeaders = function(apiKey) {
+const createHeaders = function(apiKey) {
   const headers = {}
   headers['content-type'] = 'application/json'
   headers['Authorization'] = `Bearer ${apiKey}`
