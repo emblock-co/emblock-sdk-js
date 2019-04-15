@@ -55,7 +55,6 @@ export default class EmblockClient {
     const headers = createHeaders(this.apiKey)
     if (wallet) headers['wallet'] = wallet
     const path = `${SERVER_URL}/calls/${this.contractId}/${functionName}`
-    console.log('path =' + path)
     return fetch(path, {
       method: 'POST',
       headers: headers,
@@ -63,12 +62,10 @@ export default class EmblockClient {
     })
       .then(parseJSON)
       .then(resp => {
-        //console.log('resp=' + JSON.stringify(resp))
         return this.callFunctionStatus(resp.json.callId)
           .then(parseJSON)
           .then(response => {
             return new Promise(resolve => {
-              //console.log('response=' + JSON.stringify(response.json))
               resolve({
                 status: response.json.status,
                 isSuccessful: response.json.status === 'Successful'
@@ -87,7 +84,6 @@ export default class EmblockClient {
     headers['content-type'] = 'application/json'
     headers['Authorization'] = `Bearer ${this.apiKey}`
     const path = `${SERVER_URL}/calls/${callId}/status`
-    console.log('path =' + path)
     return fetch(path, {
       method: 'GET',
       headers: headers
@@ -117,7 +113,6 @@ export default class EmblockClient {
           }
         }
         const msg = JSON.stringify(data)
-        console.log('onOpen=' + msg)
         this.socket.send(msg)
       })
 
