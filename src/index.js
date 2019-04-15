@@ -3,7 +3,6 @@
 import fetch from 'node-fetch'
 import WebSocket from 'isomorphic-ws'
 
-//const SERVER_URL = 'https://api.emblock.co/'
 const SERVER_URL = 'https://api.emblock.co/'
 
 /**
