@@ -3,7 +3,7 @@
 import fetch from 'node-fetch'
 import WebSocket from 'isomorphic-ws'
 
-const SERVER_URL = 'https://api.emblock.co/'
+const SERVER_URL = 'https://api.emblock.co'
 
 /**
  * This is a javascript SDK to interact with a project/smart contract deployed on the Emblock platform.

@@ -1,6 +1,6 @@
 {
   "name": "emblock-sdk-js",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "Emblock Javascript SDK",
   "main": "./dist/index.main.js",
   "module": "./src/index.js",
