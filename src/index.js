@@ -2,6 +2,7 @@
 
 import fetch from 'node-fetch'
 import WebSocket from 'isomorphic-ws'
+import utf8 from 'utf8'
 
 const SERVER_URL = 'https://api.emblock.co'
 
@@ -170,4 +171,46 @@ const parseJSON = response => {
         })
       )
   })
+}
+
+// UTILS 
+export function utf8ToHex(str, allowZero) {
+  str = utf8.encode(str)
+  var hex = ""
+  for (var i = 0; i < str.length; i++) {
+    var code = str.charCodeAt(i)
+    if (code === 0) {
+      if (allowZero) {
+        hex += "00"
+      } else {
+        break
+      }
+    } else {
+      var n = code.toString(16)
+      hex += n.length < 2 ? "0" + n : n
+    }
+  }
+
+  while (hex.length < 64) {
+    hex += "0"
+  }
+
+  return "0x" + hex
+}
+
+export function hexToUtf8(hex) {
+  // Find termination
+  var str = ""
+  var i = 0,
+    l = hex.length
+  if (hex.substring(0, 2) === "0x") {
+    i = 2
+  }
+  for (; i < l; i += 2) {
+    var code = parseInt(hex.substr(i, 2), 16)
+    if (code === 0) break
+    str += String.fromCharCode(code)
+  }
+
+  return utf8.decode(str)
 }
