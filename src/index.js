@@ -151,7 +151,7 @@ const getErrorMessage = function(resp) {
 
 const createHeaders = function(apiKey) {
   const headers = {}
-  headers['content-type'] = 'application/json'
+  headers['content-type'] = 'application/json;charset=utf-8'
   headers['Authorization'] = `Bearer ${apiKey}`
   return headers
 }
