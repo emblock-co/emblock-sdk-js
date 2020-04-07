@@ -3,6 +3,9 @@
 import fetch from 'node-fetch'
 import WebSocket from 'isomorphic-ws'
 import utf8 from 'utf8'
+import Common from 'ethereumjs-common'
+import { Transaction as ethereumTx } from 'ethereumjs-tx'
+import BigNumber from 'bignumber.js/bignumber';
 
 const SERVER_URL = 'https://api.emblock.co'
 
@@ -78,6 +81,65 @@ export default class EmblockClient {
   }
 
   /**
+   * Get a function call signature
+   * @param {string} publicKey public address of the sender
+   * @param {string} privateKey private key of the sender to sign the transaction on cliend side
+   * @param {string} functionName name of the function to call
+   * @param {object} params parameters of the function
+   */
+  getFunctionCallSignature(publicKey, privateKey, functionName, params) {
+    const headers = createHeaders(this.apiKey)
+    headers['wallet'] = publicKey
+    const path = `${SERVER_URL}/projects/${this.projectId}/calls/current/${functionName}`
+    return fetch(path, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(params)
+    })
+      .then(parseJSON)
+      .then(resp => {
+        if (resp.ok) {
+          return new Promise((resolve, reject) => {
+            const txRaw = resp.json.txRaw
+            const privKey = Buffer.from(privateKey, 'hex')
+
+            const nonce = new BigNumber(txRaw.nonce).toString(16)
+            const gasPrice = new BigNumber(txRaw.gasPrice).toString(16)
+            const gasLimit = new BigNumber(txRaw.gasLimit).toString(16)
+            const value = new BigNumber(txRaw.value).toString(16)
+
+            const txParams = {
+              nonce: `0x${nonce}`,
+              gasPrice: `0x${gasPrice}`,
+              gasLimit: `0x${gasLimit}`,
+              value: `0x${value}`,
+              to: txRaw.to,
+              data: `0x${txRaw.data}`
+            }
+
+            const customCommon = Common.forCustomChain(
+              'mainnet',
+              {
+                name: 'net',
+                networkId: 0,
+                chainId: 0,
+              },
+               // we set an old chain to avoid using a chainId to sign tx, needed for EIP155 (replay attack on alternative chain)
+              'tangerineWhistle',
+            )
+
+            const tx = new ethereumTx(txParams, { common: customCommon })
+            tx.sign(privKey)
+            const serializedTx = tx.serialize().toString("hex")
+            return resolve(serializedTx)
+          })
+        } else {
+          return new Promise((resolve, reject) => reject(Error(getErrorMessage(resp))))
+        }
+      })
+  }
+
+  /**
    * Get a function status (Successful|Failed) from a callId
    * @param {string} callId callId returned by the 'callFunction'
    */
@@ -142,14 +204,14 @@ export default class EmblockClient {
   }
 }
 
-const getErrorMessage = function(resp) {
-  const error = resp.json.error
+const getErrorMessage = function (resp) {
+  const error = resp.json.message
   var errorMessage = resp.status
   if (error) errorMessage = `${errorMessage}: ${error}`
   return errorMessage
 }
 
-const createHeaders = function(apiKey) {
+const createHeaders = function (apiKey) {
   const headers = {}
   headers['content-type'] = 'application/json;charset=utf-8'
   headers['Authorization'] = `Bearer ${apiKey}`

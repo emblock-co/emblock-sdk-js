@@ -73,6 +73,28 @@ emblock
   })
 ```
 
+### Call a function with client-side signature
+
+We are calling the transfer function of an ERC-20 smart contract. The transaction is signed on client side with the given privateKey.
+It returns the signature in hex format.
+
+```js
+const user1 = '0x73426F686Db8e511310a9fb90F9B22DB71ed53D4' // wallet address of the user 1
+const params = { to: user1, value: '100' }
+const privateKey = '<sender_private_key>'
+const publicKey = '<sender_public_key>'
+emblock
+  .getFunctionCallSignature(publicKey, privateKey, 'transfer', params)
+  .then(resp => {
+    console.log('signature=' + resp)
+
+    // ... then eth_sendRawTransaction
+  })
+  .catch(err => {
+    console.log('error=' + err)
+  })
+```
+
 ### Listening to Events
 
 Listening to events emitted by your smart contract.
